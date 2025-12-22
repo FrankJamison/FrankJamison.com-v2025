@@ -1,0 +1,38 @@
+/***********************************************/
+/* Portfolio Styles                            */
+/***********************************************/
+.projectTitle {
+    display: block;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.download {
+    display: block;
+    margin: 0 auto;
+}
+
+.box h5 {
+    text-align: center;
+    font-size: 14px;
+}
+
+.footnote {
+    font-size: 12px;
+    font-style: italic;
+}
+
+.special-instructions {
+    display: none;
+}
+
+.row-centered {
+    text-align: center;
+}
+
+.col-centered {
+    display: inline-block;
+    float: none;
+    text-align: left;
+    vertical-align: top;
+}
