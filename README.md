@@ -1,4 +1,4 @@
-# 2025-FrankJamison
+# 2025 FrankJamison.com
 
 Personal website/portfolio for Frank Jamison.
 
