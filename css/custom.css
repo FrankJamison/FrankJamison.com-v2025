@@ -36,3 +36,38 @@
     text-align: left;
     vertical-align: top;
 }
+
+/* Accessibility: visible focus for keyboard users */
+a:focus,
+button:focus,
+input:focus,
+textarea:focus,
+select:focus {
+    outline: 3px solid #ffd54f;
+    outline-offset: 2px;
+}
+
+/* Accessibility: respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    /* Make common Bootstrap transitions instant */
+    .fade,
+    .collapsing,
+    .modal.fade .modal-dialog,
+    .modal-backdrop,
+    .tooltip {
+        transition: none !important;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}

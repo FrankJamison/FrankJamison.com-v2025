@@ -1,33 +1,118 @@
-# 2025 FrankJamison.com
+# FrankJamison.com (2025–2026) — Portfolio Site
 
-Personal website/portfolio for Frank Jamison.
+Hi — I’m Frank Jamison. This repository contains the source for my personal portfolio site.
 
-This repo is intentionally “simple web”: mostly static HTML/CSS/JS with a small amount of PHP for the contact form. There is no build step, no package manager, and no framework—what you see in the repo is what gets served.
+I built it as a deliberately “simple web” project (PHP + HTML/CSS/JS) with no framework and no build step. The goal is to keep the site fast to load, easy to host, and easy to maintain while still demonstrating solid front-end structure and basic backend form handling.
 
-## Quick start (local)
+## 2026 refresh highlights
 
-### Option A (recommended): Apache + PHP (XAMPP / Laragon / WAMP)
+As of January 2026, I’ve done a small “polish + hardening” pass focused on accessibility, SEO, and form abuse prevention:
 
-This project is already wired for a local virtual host at:
+- **Accessibility:** improved keyboard/mobile navigation behavior, focus visibility, and reduced-motion handling.
+- **SEO:** expanded structured data (JSON-LD) and added profile links via `sameAs`.
+- **Contact form:** added lightweight abuse controls (rate limiting + token/timing).
+- **Repo cleanup:** removed unused vendored scripts so `js/` better reflects what’s actually used.
 
+## What I’m demonstrating here
+
+- **One-page portfolio UX** with a sticky navigation bar and smooth-scrolling section navigation.
+- **Responsive layout** using Bootstrap’s grid system.
+- **A consistent visual design** (hero background + overlay, clear section rhythm, “inverse” dark sections for contrast).
+- **Practical server-side fundamentals**: validation, safe-ish email composition, and simple sanitization against header injection.
+
+## Tech stack
+
+**Server-side**
+- PHP (no framework)
+- Contact form uses PHP `mail()`
+
+**Front-end**
+- Bootstrap 3 (layout + components) (CDN)
+- Font Awesome (icons) (CDN)
+- Google Fonts (Montserrat + Cardo)
+- jQuery (CDN)
+- Plugins (vendored in `js/`):
+  - Ekko Lightbox (`js/ekko-lightbox.js`)
+  - Sticky header plugin (`js/jquery.sticky.js`)
+  - Smooth scroll helper (`js/jquery.scrollTo.min.js`)
+
+**No build tooling**
+- No npm, no bundler, no transpilation. Assets are served directly.
+
+## Site structure (information architecture)
+
+The site is implemented as a single-page layout in [index.php](index.php):
+
+- `#intro` — Full-screen hero with background image overlay.
+- `#about` — Bio + portrait.
+- `#services` — “Skills” cards (icon + title + short description).
+- `#portfolio` — Gallery tiles that link to external sites.
+- `#goals` — Long-form narrative section.
+- `#contact` — Contact form.
+
+## Design & UX implementation details
+
+**Layout + responsiveness**
+- I use Bootstrap’s grid (`.col-md-*`, `.col-sm-*`) to keep layout predictable across breakpoints.
+- The navigation collapses into the standard Bootstrap mobile menu.
+
+**Hero treatment**
+- `#intro` uses a background image plus an `.overlay` layer to keep text readable.
+- The hero is full height with a `min-height` guard so it doesn’t collapse on smaller viewports.
+
+**Theme styling**
+- Primary theme styles live in [css/style.default.css](css/style.default.css).
+- Site-specific tweaks live in [css/custom.css](css/custom.css) (portfolio tile title styling, honeypot field hidden in the contact form, etc.).
+
+**Navigation behavior**
+- Sticky header behavior is enabled by `js/front.js` + `js/jquery.sticky.js`.
+- Smooth scrolling uses `js/jquery.scrollTo.min.js` targeting `.scroll-to` and `#navigation a`.
+
+**Lightbox support**
+- I included Ekko Lightbox support in `js/front.js` (delegated click handler).
+- Current portfolio tiles open external websites (not lightbox), but the lightbox wiring is there for image-gallery style use.
+
+## Contact form (backend + security basics)
+
+The contact form posts back to the same page:
+
+- Form action: `$_SERVER['PHP_SELF'] . '#contact'`
+- Submit key: `submit`
+
+**Validation approach**
+- Regex validation is done via `fieldValidation()` in [includes/functions.inc.php](includes/functions.inc.php).
+- I sanitize strings via `clean_string()` (removes tokens like `bcc:`, `content-type`, `href`, etc.).
+
+**Email delivery**
+- Destination: `frank@frankjamison.com`
+- Subject: `FrankJamison.com Contact Form Submission`
+- Uses `@mail(...)` with `From`/`Reply-To` headers derived from the submitted email.
+
+**Spam prevention**
+- The form includes a visually hidden “honeypot” field (CSS `display: none`) intended to catch bots.
+- Lightweight abuse controls are also implemented server-side:
+  - A session-backed form token + minimum-submit-time check to reduce automated posts
+  - Best-effort IP/user-agent rate limiting (file-based) to slow repeated submissions
+
+## Local development
+
+### Option A (recommended on Windows): Apache + PHP (XAMPP / Laragon / WAMP)
+
+This workspace is set up for a local virtual host:
 - `http://2025frankjamison.localhost/`
 
 VS Code includes a task that opens that URL:
+- [Open in Browser task](.vscode/tasks.json)
 
-- `.vscode/tasks.json` → **Open in Browser**
+Typical Apache vhost values:
+- `ServerName`: `2025frankjamison.localhost`
+- `DocumentRoot`: the repo folder (this workspace is `D:/Websites/2025FrankJamison`)
 
-Suggested vhost configuration (Apache):
+Hosts entry (run as admin):
+- Edit `C:\Windows\System32\drivers\etc\hosts`
+- Add: `127.0.0.1  2025frankjamison.localhost`
 
-- **ServerName**: `2025frankjamison.localhost`
-- **DocumentRoot**: `D:/Websites/2025-FrankJamison`
-
-Windows hosts file entry (run as admin):
-
-- File: `C:\Windows\System32\drivers\etc\hosts`
-- Add:
-  - `127.0.0.1  2025frankjamison.localhost`
-
-### Option B: PHP built-in server (fastest if you don’t need email)
+### Option B: PHP built-in server
 
 From the repo root:
 
@@ -35,112 +120,62 @@ From the repo root:
 php -S localhost:8000 -t .
 ```
 
-Then open:
+Then open `http://localhost:8000/`.
 
-- `http://localhost:8000/`
+Note: PHP `mail()` typically won’t work out-of-the-box on Windows without SMTP/sendmail configuration.
 
-Notes:
-- The contact form uses PHP’s `mail()` which typically **won’t work** out-of-the-box on Windows without configuring SMTP/sendmail.
-- The site is designed around the `2025frankjamison.localhost` vhost (see Option A).
+## Deployment
 
-## How the site works
+There is no build step, so deployment is a straight copy:
 
-### Main entrypoints
-
-- `index.php`
-  - The main single-page site (scrolling sections: intro, about, skills, portfolio, goals, contact).
-  - Contains the contact form logic at the top of the file **and** the HTML for the entire page.
-
-- `contact.php`
-  - Legacy/alternate contact form handler (expects `comments` instead of `comment`).
-  - Not used by the main form on `index.php` (the main form posts back to `index.php`).
-
-### Contact form flow
-
-The contact form is server-rendered and posts back to the same page:
-
-- `<form action="<?= $_SERVER['PHP_SELF'] . '#contact' ?>" method="post">`
-
-On submit:
-1. PHP reads `firstName`, `lastName`, `emailAddress`, `comment`.
-2. Input is validated using regex + helper functions from `includes/functions.inc.php`.
-3. If valid, it sends an email via PHP `mail()` to `frank@frankjamison.com`.
-4. The page shows a “Thank you…” message.
-5. A `refresh` header is sent that redirects the browser after 5 seconds.
-
-Important note for local dev:
-- The redirect target is hard-coded to production:
-  - `http://frankjamison.com/index.php#contact`
-- If you submit the form locally, your browser may jump to the live site.
-  - For local testing, temporarily comment out or adjust that header.
-
-### JavaScript behavior
-
-Most interactivity is handled by `js/front.js`:
-- Lightbox support via `ekko-lightbox`.
-- Sticky header behavior.
-- Smooth scrolling for the nav (`.scroll-to` and `#navigation a`).
-
-The repo also includes `js/gmaps.js` (GMaps.js library), but Google Maps is currently commented out in `index.php`.
+- Copy the repository to your web host.
+- Point the document root at the repo folder.
+- Ensure PHP is enabled.
+- Ensure the host supports email sending via PHP `mail()` (or swap to an SMTP-based approach).
 
 ## Project structure
 
-Top-level:
+- [index.php](index.php): main page + contact form handling
+- [contact.php](contact.php): older/alternate contact handler (expects `comments`; not used by the main form)
+- [includes/functions.inc.php](includes/functions.inc.php): validation + sanitization helpers
+- [css/](css): theme and custom styling
+- [js/](js): site behavior + vendored plugins
+- [img/](img): images and portfolio thumbnails
 
-- `index.php` — Main page + contact form logic
-- `contact.php` — Legacy/alternate contact handler
-- `includes/` — Small PHP helpers
-- `css/` — Stylesheets (Bootstrap/theme + custom overrides)
-- `js/` — Front-end JS (jQuery plugins + site scripts)
-- `img/` — Images
+## Customization (developer handoff)
 
-Archived content:
+**Update content**
+- Edit [index.php](index.php) section-by-section (`#about`, `#services`, `#portfolio`, `#goals`).
 
-- This repo previously included a `portfolio/` folder with older course projects and historical site snapshots.
-- That archived folder is no longer part of the current working tree.
-  - If you need it back, restore it from Git history (or keep it in a separate archive repo/folder).
+**Update portfolio tiles**
+- Replace/add thumbnails in [img/](img).
+- Update the anchors and images in the `#portfolio` section in [index.php](index.php).
 
-### `includes/`
+**Update styling**
+- Put site-specific tweaks in [css/custom.css](css/custom.css).
+- If you need larger theme changes, adjust [css/style.default.css](css/style.default.css).
 
-- `includes/functions.inc.php`
-  - `fieldValidation($regex, $value)` returns the original value or `false`
-  - `clean_string($value)` strips suspicious header-like strings
+**Update behavior**
+- Site behavior is in `js/front.js`.
+- Most other files in `js/` are third-party plugins.
 
-### `css/`
+## Accessibility & SEO improvements I’d make next
 
-Contains vendor/theme CSS plus site overrides:
-- `bootstrap*.css`, `font-awesome.css`, `style.default.css`, etc.
-- `custom.css` is the intended place for project-specific tweaks.
+I’ve already implemented the “quick wins” (clean heading hierarchy, improved meta tags, better alt text on portfolio thumbnails, better form error handling, JSON-LD structured data, visible focus styles, and reduced-motion handling across the site’s key interactions). If I were hardening this further, these are the next improvements I’d tackle:
 
-## Common tasks
+- **Keyboard/mobile nav UX:** continue auditing real-device tab order and edge-case screen-reader behavior.
+- **Structured data validation:** JSON-LD now includes `sameAs` profile links; validate via Google’s Rich Results Test and address any warnings.
+- **Abuse controls:** implemented basic rate limiting + form token/timing; add CAPTCHA only if needed.
 
-- Open locally in Chrome: run the VS Code task **Open in Browser**.
-- Update content: edit `index.php` (most content is inline in the markup).
-- Update images: add/replace files in `img/` and update `<img src="...">` references.
-- Update styles: prefer changes in `css/custom.css`.
+## Known implementation notes (for maintainers)
 
-## Troubleshooting
+These are the remaining “worth knowing” items after cleanup:
 
-### “I’m seeing the 2013 site / old content”
+- **jQuery local fallback:** the site uses CDN jQuery with a local fallback at `js/jquery.min.js`.
+- **Repo cleanup:** unused vendored scripts were removed (e.g., old jQuery copies, `jquery.cookie.js`, `jquery.stellar.min.js`, `main.js`, `respond.min.js`, `gmaps.js`).
+- **Bootstrap JS:** the site currently loads Bootstrap JS from a CDN; `js/bootstrap.min.js` remains in the repo and can be removed if I don’t need an offline fallback.
 
-That’s almost always a local server configuration issue, not PHP “mixing” files:
+## Credits / third-party assets
 
-- Verify your vhost `DocumentRoot` points to `D:/Websites/2025-FrankJamison`.
-- Confirm the URL you’re opening:
-  - `http://2025frankjamison.localhost/` (2025 site)
-  - If you have other local vhosts (older site versions), make sure you’re not hitting the wrong host name.
+This repo uses third-party libraries via CDNs and the `css/` + `js/` folders (Bootstrap, Font Awesome, jQuery, and plugins). Refer to upstream licenses and documentation as needed.
 
-### Contact form not sending email
-
-- PHP `mail()` depends on server configuration.
-  - On Windows, you typically need to configure SMTP in `php.ini` or use a local mail catcher.
-
-### Assets not loading / broken styling
-
-- Confirm the site is being served from the repo root (so relative paths like `css/custom.css` resolve).
-- If you move the site into a subfolder, you’ll need to adjust relative links.
-
-## Notes
-
-- No build step: deploy by serving the folder from a PHP-capable web server.
-- This repo intentionally avoids adding new dependencies unless necessary.
